@@ -60,6 +60,9 @@ coverage/
 /backend/certificates/*.pem
 /backend/certificates/*.p12
 /backend/certificates/*.key
+# CRITICAL: Never commit Apple AuthKey files - these contain sensitive credentials
+/backend/certificates/AuthKey_*.p8
+AuthKey_*.p8
 
 # Generated passes and outputs
 /backend/passes/*.pkpass
