@@ -1,0 +1,32 @@
+{
+  "name": "loyalty-server",
+  "version": "1.0.0",
+  "description": "Digital Loyalty Card Backend with Push Notifications and Geofencing",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "setup": "npm install && echo 'Dependencies installed successfully!'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "apple",
+    "wallet",
+    "passkit",
+    "apns",
+    "loyalty",
+    "geofence"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "apn": "^2.2.0",
+    "dotenv": "^16.5.0",
+    "express": "^4.18.2",
+    "passkit-generator": "^3.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

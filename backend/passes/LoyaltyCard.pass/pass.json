@@ -1,0 +1,90 @@
+{
+  "aps": {
+    "content-available": 1
+  },
+  "formatVersion": 1,
+  "passTypeIdentifier": "pass.com.flowapt.loyalty",
+  "serialNumber": "whatsapp456",
+  "teamIdentifier": "YWGPCC8YUN",
+  "organizationName": "Flowapt",
+  "description": "Loyalty Rewards Card",
+  "logoText": "Flowapt Rewards",
+  "foregroundColor": "#FFFFFF",
+  "changeMessage": "You now have %@ points!",
+  "backgroundColor": "#121317",
+  "labelColor": "#FFFFFF",
+  "relevantDate": "2025-04-19T12:49:09.902Z",
+  "authenticationToken": "SECRET123456789ABCDEF",
+  "webServiceURL": "https://sponge-internal-lately.ngrok-free.app/pass",
+  "barcodes": [
+    {
+      "format": "PKBarcodeFormatQR",
+      "message": "https://flowapt.com",
+      "messageEncoding": "iso-8859-1",
+      "altText": "Visit flowapt.com ⚡️"
+    }
+  ],
+  "locations": [
+    {
+      "latitude": 37.7749,
+      "longitude": -122.4194,
+      "relevantText": "You're near a Flowapt store. Show this pass to earn bonus points!"
+    },
+    {
+      "latitude": 34.0522,
+      "longitude": -118.2437,
+      "relevantText": "Welcome to our Los Angeles location!"
+    },
+    {
+      "latitude": 40.7128,
+      "longitude": -74.006,
+      "relevantText": "Visit our New York flagship store!"
+    }
+  ],
+  "storeCard": {
+    "headerFields": [
+      {
+        "key": "balance",
+        "label": "Points",
+        "value": "100",
+        "changeMessage": "You now have %@ points!"
+      }
+    ],
+    "primaryFields": [
+      {
+        "key": "message",
+        "label": "",
+        "value": ""
+      }
+    ],
+    "secondaryFields": [
+      {
+        "key": "level",
+        "label": "Tier Level",
+        "value": "Gold",
+        "changeMessage": "Congratulations! Your tier is now %@! Shop now at https://wa.me/27790773716"
+      },
+      {
+        "key": "member",
+        "label": "Member #",
+        "value": "WHATS123"
+      }
+    ],
+    "auxiliaryFields": [
+      {
+        "key": "joinDate",
+        "label": "Member Since",
+        "value": "2021",
+        "textAlignment": "PKTextAlignmentRight"
+      }
+    ],
+    "backFields": [
+      {
+        "key": "whatsapp",
+        "label": "WhatsApp",
+        "value": "https://wa.me/27790773716",
+        "attributedValue": "<a href='https://wa.me/27790773716'><font color='#0000FF'>Shop</font></a>"
+      }
+    ]
+  }
+}
