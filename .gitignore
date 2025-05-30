@@ -70,6 +70,13 @@ AuthKey_*.p8
 *.pkpass
 temp_*/
 
+# Large template images (downloaded from Supabase as needed)
+/backend/passes/LoyaltyCard.pass/*.png
+/backend/passes/LoyaltyCard.pass/icon.png
+/backend/passes/LoyaltyCard.pass/new-strip.png
+/backend/passes/LoyaltyCard.pass/strip-black.png
+/backend/passes/LoyaltyCard.pass/strip-white.png
+
 # Temporary files
 tmp/
 temp/ 

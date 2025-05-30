@@ -55,20 +55,15 @@ function loadData() {
 }
 
 // Function to upload pass to Supabase storage (BULK/LEGACY STORAGE)
-async function uploadPassToSupabase(serial, passFilePath) {
+async function uploadPassToSupabase(serial, passBuffer) {
   try {
-    if (!fs.existsSync(passFilePath)) {
-      throw new Error(`Pass file not found: ${passFilePath}`);
-    }
-    
-    const fileData = fs.readFileSync(passFilePath);
     const fileName = `${serial}.pkpass`;
     
     console.log(`📦 Uploading ${fileName} to individual-passes (bulk storage)...`);
     
     const { data, error } = await supabaseAdmin.storage
       .from('individual-passes')
-      .upload(fileName, fileData, {
+      .upload(fileName, passBuffer, {
         contentType: 'application/vnd.apple.pkpass',
         upsert: true
       });
@@ -102,21 +97,21 @@ async function updatePassFile(serial) {
   try {
     console.log(`🔄 Regenerating pass ${serial}...`);
     
-    // Generate pass (now uploads to passes-data/{orgId}/generated/ automatically)
-    const passPath = await generatePass(
+    // Generate pass (now returns buffer and upload path)
+    const result = await generatePass(
       serial,
       pass.data.points,
       pass.data.tier,
       pass.data.member,
-      path.join(__dirname, "passes/outputs")
+      path.join(__dirname, "passes/outputs"), // Still need this for temp directory
     );
     
     // Also upload to individual-passes for bulk/legacy storage
     let individualPassesUrl = null;
     try {
-      individualPassesUrl = await uploadPassToSupabase(serial, passPath);
+      individualPassesUrl = await uploadPassToSupabase(serial, result.buffer);
       console.log(`🎯 Pass ${serial} available in both locations:`);
-      console.log(`   📁 Organized: passes-data/{orgId}/generated/`);
+      console.log(`   📁 Organized: passes-data/${result.uploadPath}`);
       console.log(`   📦 Bulk: individual-passes`);
     } catch (uploadError) {
       console.warn(`⚠️ Failed to upload to individual-passes (organized storage still succeeded): ${uploadError.message}`);
@@ -184,21 +179,21 @@ async function createPass(serialNumber, points, tier, memberNumber, authToken) {
   try {
     console.log(`🏗️ Generating new pass ${serialNumber}...`);
     
-    // Generate pass (now uploads to passes-data/{orgId}/generated/ automatically)
-    const passPath = await generatePass(
+    // Generate pass (now returns buffer and upload path)
+    const result = await generatePass(
       serialNumber,
       passes[serialNumber].data.points,
       passes[serialNumber].data.tier,
       passes[serialNumber].data.member,
-      path.join(__dirname, "passes/outputs")
+      path.join(__dirname, "passes/outputs") // Still need this for temp directory
     );
 
     // Also upload to individual-passes for bulk/legacy storage
     let individualPassesUrl = null;
     try {
-      individualPassesUrl = await uploadPassToSupabase(serialNumber, passPath);
+      individualPassesUrl = await uploadPassToSupabase(serialNumber, result.buffer);
       console.log(`🎯 New pass ${serialNumber} available in both locations:`);
-      console.log(`   📁 Organized: passes-data/{orgId}/generated/`);
+      console.log(`   📁 Organized: passes-data/${result.uploadPath}`);
       console.log(`   📦 Bulk: individual-passes`);
     } catch (uploadError) {
       console.warn(`⚠️ Failed to upload to individual-passes (organized storage still succeeded): ${uploadError.message}`);

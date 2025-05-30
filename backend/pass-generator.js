@@ -141,8 +141,6 @@ async function generatePass(
 
       // Generate the .pkpass file
       const buffer = await pass.getAsBuffer();
-      const outputFilePath = path.join(outputPath, `${serialNumber}.pkpass`);
-      fs.writeFileSync(outputFilePath, buffer);
 
       // Upload generated pass to Supabase (in organization's generated folder)
       console.log("☁️ Uploading generated pass to Supabase...");
@@ -158,12 +156,13 @@ async function generatePass(
 
       if (uploadError) {
         console.warn(`⚠️ Failed to upload pass to Supabase: ${uploadError.message}`);
+        throw new Error(`Failed to upload pass: ${uploadError.message}`);
       } else {
         console.log(`✅ Pass uploaded to: passes-data/${passUploadPath}`);
       }
 
-      console.log(`🎉 Pass generated successfully: ${outputFilePath}`);
-      return outputFilePath;
+      console.log(`🎉 Pass generated successfully (cloud-only): ${passUploadPath}`);
+      return { buffer, uploadPath: passUploadPath };
 
     } finally {
       // Clean up temporary template directory

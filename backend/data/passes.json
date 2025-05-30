@@ -804,11 +804,11 @@
   "ROCKET-MATT-PASS": {
     "authToken": "SECRET123456789ABCDEF",
     "data": {
-      "points": 500,
+      "points": 40500,
       "tier": "Bronze",
       "member": "ROCKET-MATT-001"
     },
-    "lastUpdated": 1748603720458000
+    "lastUpdated": 1748634766725000
   },
   "QUEEN-CIARA": {
     "authToken": "SECRET123456789ABCDEF",

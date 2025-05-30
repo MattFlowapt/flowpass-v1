@@ -198,18 +198,9 @@ function servePass(passTypeID, serial, authHeader, passes, updatePassFile) {
     return { status: 401, message: "Invalid authentication token" };
   }
 
-  // Get the pass file
-  const passPath = path.join(__dirname, `passes/outputs/${serial}.pkpass`);
-
-  if (!fs.existsSync(passPath)) {
-    console.log(`Pass file not found at ${passPath}, trying to generate it...`);
-    // Return indication that pass needs to be generated
-    return { status: 'generate', passPath, serial };
-  } else {
-    // Pass file exists, return path to serve it
-    console.log(`Serving existing pass ${serial}`);
-    return { status: 200, passPath };
-  }
+  // No local file check needed - always fetch from Supabase
+  console.log(`Fetching pass ${serial} from Supabase storage`);
+  return { status: 'fetch-supabase', serial };
 }
 
 // Send push notifications for pass updates

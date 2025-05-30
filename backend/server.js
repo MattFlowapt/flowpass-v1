@@ -4,10 +4,16 @@ require("dotenv").config();
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const { createClient } = require('@supabase/supabase-js');
 
 // Import our custom modules
 const passManager = require("./passManager");
 const appleServices = require("./appleServices");
+
+// Initialize Supabase client for file fetching
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 const app = express();
 
@@ -100,25 +106,44 @@ app.get("/pass/v1/passes/:passTypeID/:serial", async (req, res) => {
     passManager.updatePassFile
   );
 
-  if (result.status === 200) {
-    res.set("Content-Type", "application/vnd.apple.pkpass");
-    res.sendFile(result.passPath);
-  } else if (result.status === 'generate') {
-    // Try to generate the pass on the fly
+  if (result.status === 'fetch-supabase') {
+    // Fetch pass from Supabase storage
     try {
-      const success = await passManager.updatePassFile(serial);
+      const orgId = process.env.SUPABASE_ORGANIZATION_ID;
+      const { data, error } = await supabaseAdmin.storage
+        .from('passes-data')
+        .download(`${orgId}/generated/${serial}.pkpass`);
+
+      if (error) {
+        console.log(`Pass not found in Supabase, trying to generate it...`);
+        // Try to generate the pass
+        const success = await passManager.updatePassFile(serial);
         if (success) {
+          // Retry fetching after generation
+          const { data: retryData, error: retryError } = await supabaseAdmin.storage
+            .from('passes-data')
+            .download(`${orgId}/generated/${serial}.pkpass`);
+          
+          if (retryError) {
+            return res.status(500).send("Could not generate pass file");
+          }
+          
           res.set("Content-Type", "application/vnd.apple.pkpass");
-        res.sendFile(result.passPath);
-          console.log(`Generated and served pass ${serial}`);
+          res.send(Buffer.from(await retryData.arrayBuffer()));
+          console.log(`Generated and served pass ${serial} from Supabase`);
         } else {
           res.status(500).send("Could not generate pass file");
         }
+      } else {
+        res.set("Content-Type", "application/vnd.apple.pkpass");
+        res.send(Buffer.from(await data.arrayBuffer()));
+        console.log(`Served existing pass ${serial} from Supabase`);
+      }
     } catch (err) {
-        console.error(`Error generating pass ${serial}:`, err);
-        res.status(500).send("Error generating pass file");
+      console.error(`Error fetching pass ${serial}:`, err);
+      res.status(500).send("Error fetching pass file");
     }
-        } else {
+  } else {
     res.status(result.status).send(result.message);
   }
 });
@@ -204,32 +229,45 @@ app.get("/download/:serial.pkpass", async (req, res) => {
   const serial = req.params.serial;
   console.log(`Direct download requested for pass ${serial}`);
 
-  const passPath = path.join(__dirname, `passes/outputs/${serial}.pkpass`);
+  if (!passManager.passes[serial]) {
+    return res.status(404).send("Pass not found");
+  }
 
-  if (!fs.existsSync(passPath)) {
-    console.log(`Pass file not found at ${passPath}, trying to generate it...`);
-    
-    if (!passManager.passes[serial]) {
-      return res.status(404).send("Pass not found");
-    }
+  try {
+    // Fetch from Supabase instead of local file
+    const orgId = process.env.SUPABASE_ORGANIZATION_ID;
+    const { data, error } = await supabaseAdmin.storage
+      .from('passes-data')
+      .download(`${orgId}/generated/${serial}.pkpass`);
 
-    try {
+    if (error) {
+      console.log(`Pass not found in Supabase, trying to generate it...`);
+      
       const success = await passManager.updatePassFile(serial);
       if (success) {
+        // Retry fetching after generation
+        const { data: retryData, error: retryError } = await supabaseAdmin.storage
+          .from('passes-data')
+          .download(`${orgId}/generated/${serial}.pkpass`);
+        
+        if (retryError) {
+          return res.status(500).send("Could not generate pass file");
+        }
+        
         res.set("Content-Type", "application/vnd.apple.pkpass");
-        res.sendFile(passPath);
+        res.send(Buffer.from(await retryData.arrayBuffer()));
         console.log(`Generated and served pass ${serial} for direct download`);
       } else {
         res.status(500).send("Could not generate pass file");
       }
-    } catch (err) {
-      console.error(`Error generating pass ${serial}:`, err);
-      res.status(500).send("Error generating pass file");
+    } else {
+      res.set("Content-Type", "application/vnd.apple.pkpass");
+      res.send(Buffer.from(await data.arrayBuffer()));
+      console.log(`Served existing pass ${serial} for direct download from Supabase`);
     }
-  } else {
-    res.set("Content-Type", "application/vnd.apple.pkpass");
-    res.sendFile(passPath);
-    console.log(`Served existing pass ${serial} for direct download`);
+  } catch (err) {
+    console.error(`Error downloading pass ${serial}:`, err);
+    res.status(500).send("Error downloading pass file");
   }
 });
 
